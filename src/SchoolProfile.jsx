@@ -1,32 +1,20 @@
 import React from 'react';
 import { useQuery } from '@apollo/client';
-import { GET_USER, GET_AUDIT_ACTIVITY } from './queries';
+import { GET_USER_PROFILE, GET_AUDIT_ACTIVITY } from './queries';
 
-function SchoolProfile({ userId }) {
-  console.log('SchoolProfile - Received userId:', userId); // Debug log
-
-  // Get user details
-  const { 
-    data: userData,
-    loading: userLoading,
-    error: userError 
-  } = useQuery(GET_USER);
-
-  // Get audit data
-  const { 
-    data: auditData,
-    loading: auditLoading,
-    error: auditError 
-  } = useQuery(GET_AUDIT_ACTIVITY, {
+export default function SchoolProfile({ userId }) {
+  const { data: userData, loading: userLoading, error: userError } = useQuery(GET_USER_PROFILE, {
     variables: { userId },
     skip: !userId,
-    onError: (error) => {
-      console.error('Audit Query Error:', error);
-    }
   });
 
-  console.log('SchoolProfile - Audit Data:', auditData); // Debug log
-  console.log('SchoolProfile - Loading states:', { userLoading, auditLoading }); // Debug log
+  const { data: auditData, loading: auditLoading, error: auditError } = useQuery(GET_AUDIT_ACTIVITY, {
+    variables: { userId },
+    skip: !userId,
+  });
+
+  const audits = auditData?.transaction || [];
+  console.log('SchoolProfile - Processed audits:', audits);
 
   // Show loading state if either query is loading
   if (userLoading || auditLoading) {
@@ -39,10 +27,6 @@ function SchoolProfile({ userId }) {
     console.error('Audit Error:', auditError);
     return <div className="error">Error: {(userError || auditError)?.message}</div>;
   }
-
-  // Initialize audits array
-  const audits = auditData?.progress || [];
-  console.log('SchoolProfile - Processed audits:', audits); // Debug log
 
   return (
     <div className="profile-container">
@@ -57,33 +41,98 @@ function SchoolProfile({ userId }) {
 
       {/* Audit Activity Section */}
       <section className="audit-activity">
-        <h2>Recent Audits</h2>
+        <h2>Your audits</h2>
+        <p className="audit-description">
+          Here you can find back all your audits : the ones you have to make and the ones you've already made for other students projects.
+          For the audits you have to do, hover the block to get the verification code you'll need to complete the audit on your classmate computer.
+        </p>
         <div className="activity-list">
           {!userId ? (
             <p>No user ID available</p>
           ) : audits.length === 0 ? (
             <p>No recent audits found</p>
           ) : (
-            audits.map(audit => {
-              // Extract project name and audited user from path
-              const pathParts = audit.path.split('/');
-              const projectName = pathParts[pathParts.length - 2]; // Gets the project name
-              const auditedUser = pathParts[pathParts.length - 3]; // Gets the username
-
-              return (
-                <div key={audit.id} className="activity-item">
-                  <p><strong>Project:</strong> {projectName}</p>
-                  <p><strong>Student:</strong> {auditedUser}</p>
-                  <p><strong>Status:</strong> {audit.grade ? 'SUCCEEDED' : 'FAILED'}</p>
-                  <p><strong>Date:</strong> {new Date(audit.createdAt).toLocaleDateString()}</p>
+            audits.map(audit => (
+              <div key={audit.id} className="audit-item">
+                <div className="audit-info">
+                  <span className="project-name">{audit.object?.name || 'Unknown Project'}</span>
+                  <span className="separator">—</span>
+                  <span className="student-name">{audit.user?.login || 'Unknown Student'}</span>
                 </div>
-              );
-            })
+                <div className={`audit-status ${audit.amount > 0 ? 'succeeded' : 'failed'}`}>
+                  {audit.amount > 0 ? 'SUCCEEDED' : 'FAILED'}
+                </div>
+              </div>
+            ))
           )}
         </div>
       </section>
+
+      {/* Recent Progress Section */}
+      <section className="recent-progress">
+        <h2>Recent Progress</h2>
+        <div className="progress-list">
+          {userData?.user?.[0]?.progress?.map((item, index) => (
+            <div key={index} className="progress-item">
+              <p><strong>Project:</strong> {item.project}</p>
+              {item.grade && <p><strong>Grade:</strong> {item.grade}</p>}
+              {item.date && <p><strong>Date:</strong> {item.date}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <style jsx>{`
+        .profile-container {
+          padding: 20px;
+        }
+        .info-card {
+          background: rgba(255, 255, 255, 0.05);
+          padding: 15px;
+          border-radius: 4px;
+          margin: 10px 0;
+        }
+        .audit-description {
+          color: #888;
+          margin-bottom: 20px;
+        }
+        .audit-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          margin: 8px 0;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+        }
+        .audit-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .project-name, .student-name {
+          color: #e1e1e1;
+        }
+        .separator {
+          color: #666;
+        }
+        .audit-status {
+          font-size: 14px;
+          font-weight: 500;
+        }
+        .audit-status.succeeded {
+          color: #4CAF50;
+        }
+        .audit-status.failed {
+          color: #f44336;
+        }
+        .progress-item {
+          padding: 15px;
+          margin: 10px 0;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
+        }
+      `}</style>
     </div>
   );
 }
-
-export default SchoolProfile;

@@ -10,23 +10,39 @@ export const GET_USER = gql`
   }
 `;
 
+// Get user profile data
+export const GET_USER_PROFILE = gql`
+  query GetUserProfile($userId: Int!) {
+    user(where: {id: {_eq: $userId}}) {
+      id
+      login
+      attrs
+    }
+  }
+`;
+
 // Get audit activity
 export const GET_AUDIT_ACTIVITY = gql`
   query GetAuditActivity($userId: Int!) {
-    progress(
+    transaction(
       where: {
         userId: {_eq: $userId},
-        path: {_ilike: "%/audit/%"}
+        type: {_eq: "up"},
+        object: {type: {_eq: "audit"}}
       },
       order_by: {createdAt: desc}
     ) {
       id
-      grade
+      type
+      amount
       createdAt
-      path
       object {
         id
         name
+      }
+      user {
+        id
+        login
       }
     }
   }
