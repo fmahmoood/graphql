@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { getUserIdFromToken } from './utils'
 import AuditRatioGraph from './components/AuditRatioGraph'
 import SkillsGraph from './components/SkillsGraph'
+import { GET_USER_PROFILE } from './queries'
 
 export default function SchoolProfile() {
   const [userData, setUserData] = useState(null)
@@ -26,60 +27,6 @@ export default function SchoolProfile() {
       return;
     }
 
-    const query = `
-      query($userId: Int!) {
-        user(where: {id: {_eq: $userId}}) {
-          id
-          login
-          firstName
-          lastName
-          email
-          auditRatio
-          totalUp
-          totalDown
-          audits: audits_aggregate(
-            where: {
-              auditorId: {_eq: $userId},
-              grade: {_is_null: false}
-            },
-            order_by: {createdAt: desc}
-          ) {
-            nodes {
-              id
-              grade
-              createdAt
-              group {
-                captainLogin
-                object {
-                  name
-                }
-              }
-            }
-          }
-          progresses(where: { userId: { _eq: $userId }, object: { type: { _eq: "project" } } }, order_by: {updatedAt: desc}) {
-            id
-            object {
-              id
-              name
-              type
-            }
-            grade
-            createdAt
-            updatedAt
-          }
-          transactions(where: { 
-            userId: { _eq: $userId },
-            type: { _eq: "skill" }
-          }) {
-            type
-            amount
-            objectId
-            createdAt
-          }
-        }
-      }
-    `
-
     try {
       const response = await fetch('https://learn.reboot01.com/api/graphql-engine/v1/graphql', {
         method: 'POST',
@@ -88,7 +35,7 @@ export default function SchoolProfile() {
           'Authorization': `Bearer ${jwt}`,
         },
         body: JSON.stringify({
-          query,
+          query: GET_USER_PROFILE.loc.source.body,
           variables: { userId }
         }),
       })
@@ -169,21 +116,6 @@ export default function SchoolProfile() {
         </div>
       </section>
 
-      <section className="recent-progress">
-        <h2>Recent Progress</h2>
-        <div className="progress-list">
-          {userData.progresses?.slice(0, 5).map((progress) => (
-            <div key={progress.id} className="progress-item">
-              <p><strong>Project:</strong> {progress.object?.name}</p>
-              {progress.grade && <p><strong>Grade:</strong> {progress.grade}</p>}
-              {progress.updatedAt && (
-                <p><strong>Date:</strong> {new Date(progress.updatedAt).toLocaleDateString()}</p>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
       <style jsx>{`
         .profile-container {
           padding: 20px;
@@ -237,12 +169,6 @@ export default function SchoolProfile() {
         .status-pending {
           color: #FFC107;
           font-weight: 500;
-        }
-        .progress-item {
-          padding: 15px;
-          margin: 10px 0;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 4px;
         }
       `}</style>
     </div>
