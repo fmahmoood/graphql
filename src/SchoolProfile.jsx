@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { getUserIdFromToken } from './utils'
+import AuditRatioGraph from './components/AuditRatioGraph'
+import SkillsGraph from './components/SkillsGraph'
 
 export default function SchoolProfile() {
   const [userData, setUserData] = useState(null)
@@ -65,6 +67,15 @@ export default function SchoolProfile() {
             createdAt
             updatedAt
           }
+          transactions(where: { 
+            userId: { _eq: $userId },
+            type: { _eq: "skill" }
+          }) {
+            type
+            amount
+            objectId
+            createdAt
+          }
         }
       }
     `
@@ -105,6 +116,15 @@ export default function SchoolProfile() {
     return grade >= 1 ? <span className="status-pass">Pass</span> : <span className="status-fail">Fail</span>
   }
 
+  const skillsData = [
+    { name: 'Prog', amount: 75 },
+    { name: 'Go', amount: 65 },
+    { name: 'Front-End', amount: 80 },
+    { name: 'Js', amount: 70 },
+    { name: 'Back-End', amount: 60 },
+    { name: 'Html', amount: 85 }
+  ];
+
   return (
     <div className="profile-container">
       <section className="user-info">
@@ -113,9 +133,16 @@ export default function SchoolProfile() {
           <p><strong>Login:</strong> {userData.login}</p>
           <p><strong>Name:</strong> {userData.firstName} {userData.lastName}</p>
           <p><strong>Email:</strong> {userData.email}</p>
-          <p><strong>Audit Ratio:</strong> {Math.round(userData.auditRatio * 10) / 10}</p>
         </div>
       </section>
+
+      <div className="graphs-container">
+        <AuditRatioGraph 
+          totalUp={userData.totalUp || 0} 
+          totalDown={userData.totalDown || 0} 
+        />
+        <SkillsGraph skills={skillsData} />
+      </div>
 
       <section className="audit-activity">
         <h2>Your audits</h2>
@@ -142,15 +169,38 @@ export default function SchoolProfile() {
         </div>
       </section>
 
+      <section className="recent-progress">
+        <h2>Recent Progress</h2>
+        <div className="progress-list">
+          {userData.progresses?.slice(0, 5).map((progress) => (
+            <div key={progress.id} className="progress-item">
+              <p><strong>Project:</strong> {progress.object?.name}</p>
+              {progress.grade && <p><strong>Grade:</strong> {progress.grade}</p>}
+              {progress.updatedAt && (
+                <p><strong>Date:</strong> {new Date(progress.updatedAt).toLocaleDateString()}</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
       <style jsx>{`
         .profile-container {
           padding: 20px;
+          max-width: 1200px;
+          margin: 0 auto;
         }
         .info-card {
           background: rgba(255, 255, 255, 0.05);
           padding: 15px;
           border-radius: 4px;
           margin: 10px 0;
+        }
+        .graphs-container {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 20px;
+          margin: 20px 0;
         }
         .audit-description {
           color: #888;
@@ -187,6 +237,12 @@ export default function SchoolProfile() {
         .status-pending {
           color: #FFC107;
           font-weight: 500;
+        }
+        .progress-item {
+          padding: 15px;
+          margin: 10px 0;
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 4px;
         }
       `}</style>
     </div>
