@@ -1,84 +1,144 @@
-import React from 'react';
-import { useQuery } from '@apollo/client';
-import { GET_USER_PROFILE, GET_AUDIT_ACTIVITY } from './queries';
+import React, { useState, useEffect } from 'react'
+import { getUserIdFromToken } from './utils'
 
-export default function SchoolProfile({ userId }) {
-  const { data: userData, loading: userLoading, error: userError } = useQuery(GET_USER_PROFILE, {
-    variables: { userId },
-    skip: !userId,
-  });
+export default function SchoolProfile() {
+  const [userData, setUserData] = useState(null)
 
-  const { data: auditData, loading: auditLoading, error: auditError } = useQuery(GET_AUDIT_ACTIVITY, {
-    variables: { userId },
-    skip: !userId,
-  });
+  useEffect(() => {
+    fetchUserData()
+  }, [])
 
-  const audits = auditData?.transaction || [];
-  console.log('SchoolProfile - Processed audits:', audits);
+  const fetchUserData = async () => {
+    const jwt = localStorage.getItem('jwt_token')
+    if (!jwt) {
+      console.error('No JWT token found')
+      return
+    }
 
-  // Show loading state if either query is loading
-  if (userLoading || auditLoading) {
-    return <div className="loading">Loading profile data...</div>;
+    let userId;
+    try {
+      userId = getUserIdFromToken(jwt);
+      console.log('Extracted userId:', userId);
+    } catch (error) {
+      console.error('Error getting user ID:', error);
+      return;
+    }
+
+    const query = `
+      query($userId: Int!) {
+        user(where: {id: {_eq: $userId}}) {
+          id
+          login
+          firstName
+          lastName
+          email
+          auditRatio
+          totalUp
+          totalDown
+          audits: audits_aggregate(
+            where: {
+              auditorId: {_eq: $userId},
+              grade: {_is_null: false}
+            },
+            order_by: {createdAt: desc}
+          ) {
+            nodes {
+              id
+              grade
+              createdAt
+              group {
+                captainLogin
+                object {
+                  name
+                }
+              }
+            }
+          }
+          progresses(where: { userId: { _eq: $userId }, object: { type: { _eq: "project" } } }, order_by: {updatedAt: desc}) {
+            id
+            object {
+              id
+              name
+              type
+            }
+            grade
+            createdAt
+            updatedAt
+          }
+        }
+      }
+    `
+
+    try {
+      const response = await fetch('https://learn.reboot01.com/api/graphql-engine/v1/graphql', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${jwt}`,
+        },
+        body: JSON.stringify({
+          query,
+          variables: { userId }
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Network response was not ok')
+      }
+
+      const data = await response.json()
+      console.log('Received data:', data)
+      if (data.data?.user?.[0]) {
+        setUserData(data.data.user[0])
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+    }
   }
 
-  // Show error state if either query has an error
-  if (userError || auditError) {
-    console.error('User Error:', userError);
-    console.error('Audit Error:', auditError);
-    return <div className="error">Error: {(userError || auditError)?.message}</div>;
+  if (!userData) {
+    return <div>Loading...</div>
+  }
+
+  const getStatus = (grade) => {
+    if (grade === null) return <span className="status-pending">Pending</span>
+    return grade >= 1 ? <span className="status-pass">Pass</span> : <span className="status-fail">Fail</span>
   }
 
   return (
     <div className="profile-container">
-      {/* Basic User Info Section */}
       <section className="user-info">
         <h2>User Profile</h2>
         <div className="info-card">
-          <p><strong>Login:</strong> {userData?.user?.[0]?.login}</p>
-          <p><strong>User ID:</strong> {userId}</p>
+          <p><strong>Login:</strong> {userData.login}</p>
+          <p><strong>Name:</strong> {userData.firstName} {userData.lastName}</p>
+          <p><strong>Email:</strong> {userData.email}</p>
+          <p><strong>Audit Ratio:</strong> {Math.round(userData.auditRatio * 10) / 10}</p>
         </div>
       </section>
 
-      {/* Audit Activity Section */}
       <section className="audit-activity">
         <h2>Your audits</h2>
         <p className="audit-description">
-          Here you can find back all your audits : the ones you have to make and the ones you've already made for other students projects.
-          For the audits you have to do, hover the block to get the verification code you'll need to complete the audit on your classmate computer.
+          Here you can find back all your audits : the ones you have to make and the ones you've
+          already made for other students projects. For the audits you have to do, hover the block to
+          get the verification code you'll need to complete the audit on your classmate computer.
         </p>
         <div className="activity-list">
-          {!userId ? (
-            <p>No user ID available</p>
-          ) : audits.length === 0 ? (
+          {userData.audits?.nodes?.length === 0 ? (
             <p>No recent audits found</p>
           ) : (
-            audits.map(audit => (
+            userData.audits?.nodes?.map(audit => (
               <div key={audit.id} className="audit-item">
                 <div className="audit-info">
-                  <span className="project-name">{audit.object?.name || 'Unknown Project'}</span>
+                  <span className="project-name">{audit.group?.object?.name}</span>
                   <span className="separator">—</span>
-                  <span className="student-name">{audit.user?.login || 'Unknown Student'}</span>
+                  <span className="student-name">{audit.group?.captainLogin}</span>
                 </div>
-                <div className={`audit-status ${audit.amount > 0 ? 'succeeded' : 'failed'}`}>
-                  {audit.amount > 0 ? 'SUCCEEDED' : 'FAILED'}
-                </div>
+                {getStatus(audit.grade)}
               </div>
             ))
           )}
-        </div>
-      </section>
-
-      {/* Recent Progress Section */}
-      <section className="recent-progress">
-        <h2>Recent Progress</h2>
-        <div className="progress-list">
-          {userData?.user?.[0]?.progress?.map((item, index) => (
-            <div key={index} className="progress-item">
-              <p><strong>Project:</strong> {item.project}</p>
-              {item.grade && <p><strong>Grade:</strong> {item.grade}</p>}
-              {item.date && <p><strong>Date:</strong> {item.date}</p>}
-            </div>
-          ))}
         </div>
       </section>
 
@@ -116,23 +176,19 @@ export default function SchoolProfile({ userId }) {
         .separator {
           color: #666;
         }
-        .audit-status {
-          font-size: 14px;
+        .status-pass {
+          color: #4CAF50;
           font-weight: 500;
         }
-        .audit-status.succeeded {
-          color: #4CAF50;
-        }
-        .audit-status.failed {
+        .status-fail {
           color: #f44336;
+          font-weight: 500;
         }
-        .progress-item {
-          padding: 15px;
-          margin: 10px 0;
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 4px;
+        .status-pending {
+          color: #FFC107;
+          font-weight: 500;
         }
       `}</style>
     </div>
-  );
+  )
 }

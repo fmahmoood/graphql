@@ -16,7 +16,42 @@ export const GET_USER_PROFILE = gql`
     user(where: {id: {_eq: $userId}}) {
       id
       login
-      attrs
+      firstName
+      lastName
+      email
+      auditRatio
+      totalUp
+      totalDown
+      audits: audits_aggregate(
+        where: {
+          auditorId: {_eq: $userId},
+          grade: {_is_null: false}
+        },
+        order_by: {createdAt: desc}
+      ) {
+        nodes {
+          id
+          grade
+          createdAt
+          group {
+            captainLogin
+            object {
+              name
+            }
+          }
+        }
+      }
+      progresses(where: { userId: { _eq: $userId }, object: { type: { _eq: "project" } } }, order_by: {updatedAt: desc}) {
+        id
+        object {
+          id
+          name
+          type
+        }
+        grade
+        createdAt
+        updatedAt
+      }
     }
   }
 `;
@@ -24,25 +59,29 @@ export const GET_USER_PROFILE = gql`
 // Get audit activity
 export const GET_AUDIT_ACTIVITY = gql`
   query GetAuditActivity($userId: Int!) {
-    transaction(
+    __typename
+    audits_aggregate(
       where: {
-        userId: {_eq: $userId},
-        type: {_eq: "up"},
-        object: {type: {_eq: "audit"}}
+        auditorId: {_eq: $userId},
+        grade: {_is_null: false}
       },
       order_by: {createdAt: desc}
     ) {
-      id
-      type
-      amount
-      createdAt
-      object {
+      __typename
+      nodes {
+        __typename
         id
-        name
-      }
-      user {
-        id
-        login
+        grade
+        createdAt
+        group {
+          __typename
+          captainLogin
+          object {
+            __typename
+            id
+            name
+          }
+        }
       }
     }
   }
