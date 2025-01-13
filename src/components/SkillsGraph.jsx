@@ -1,7 +1,8 @@
 import React from 'react';
 
 const SkillsGraph = ({ skills }) => {
-  const categories = ['Prog', 'Go', 'Front-End', 'Js', 'Back-End', 'Html'];
+  // Use the actual skills from the data
+  const categories = skills.map(skill => skill.name);
   const maxValue = Math.max(...skills.map(s => s.amount));
   const scale = 100 / maxValue;
   const centerX = 150;
@@ -19,8 +20,8 @@ const SkillsGraph = ({ skills }) => {
   };
 
   // Create the polygon points for the radar chart
-  const points = skills.map((skill, i) => {
-    const point = getPoint(i, skill.amount);
+  const points = categories.map((_, i) => {
+    const point = getPoint(i, skills[i].amount);
     return `${point.x},${point.y}`;
   }).join(' ');
 
@@ -48,6 +49,7 @@ const SkillsGraph = ({ skills }) => {
           textAnchor="middle"
           dominantBaseline="middle"
           fill="#fff"
+          fontSize="14"
         >
           {category}
         </text>
@@ -71,9 +73,6 @@ const SkillsGraph = ({ skills }) => {
   return (
     <div className="skills-container">
       <h3>Best skills</h3>
-      <p className="description">
-        Here are your skills with the highest completion rate among all categories.
-      </p>
       <div className="graph-container">
         <svg width="300" height="300" viewBox="0 0 300 300">
           {/* Grid circles */}
@@ -100,17 +99,14 @@ const SkillsGraph = ({ skills }) => {
           margin: 20px 0;
         }
         .graph-container {
+          display: flex;
+          justify-content: center;
+          align-items: center;
           margin-top: 20px;
         }
         h3 {
-          margin: 0;
           color: #fff;
-          font-size: 1.5rem;
-        }
-        .description {
-          color: #888;
-          font-size: 0.9rem;
-          margin-top: 8px;
+          margin: 0 0 10px 0;
         }
       `}</style>
     </div>

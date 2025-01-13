@@ -1,18 +1,20 @@
 // Import required Apollo packages
-import { ApolloClient, InMemoryCache, createHttpLink } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 
 // Create the HTTP link that connects to our GraphQL API
 const httpLink = createHttpLink({
-  // GraphQL endpoint URL
   uri: 'https://learn.reboot01.com/api/graphql-engine/v1/graphql',
 });
 
 // Error handling link
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors) {
-    graphQLErrors.forEach(({ message }) => {
+    graphQLErrors.forEach(({ message, locations, path }) => {
+      console.error(
+        `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`,
+      );
       // If token is expired, clear localStorage and redirect to login
       if (message.includes('JWT') && message.includes('expired')) {
         console.log('Token expired, clearing session...');
@@ -20,6 +22,9 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
         window.location.href = '/login';
       }
     });
+  }
+  if (networkError) {
+    console.error(`[Network error]: ${networkError}`);
   }
 });
 
@@ -31,22 +36,29 @@ const authLink = setContext((_, { headers }) => {
   // Clean the token (remove quotes if present)
   const token = rawToken ? rawToken.replace(/^"|"$/g, '') : '';
   
-  // Log token for debugging (first 20 chars)
-  console.log('Token being used:', token.substring(0, 20));
-
   // Return the headers to the context
   return {
     headers: {
-      ...headers, // Keep existing headers
-      Authorization: token ? `Bearer ${token}` : "", // Note: Capital 'A' in Authorization
+      ...headers,
+      Authorization: token ? `Bearer ${token}` : "",
     }
   }
 });
 
 // Create Apollo Client instance
 const client = new ApolloClient({
-  link: authLink.concat(httpLink), // Combine auth middleware with httpLink
-  cache: new InMemoryCache() // Setup caching
+  link: from([errorLink, authLink, httpLink]), // Chain the links in correct order
+  cache: new InMemoryCache(),
+  defaultOptions: {
+    watchQuery: {
+      fetchPolicy: 'network-only', // Don't use cache for queries
+      errorPolicy: 'all'
+    },
+    query: {
+      fetchPolicy: 'network-only', // Don't use cache for queries
+      errorPolicy: 'all'
+    }
+  }
 });
 
 export default client;

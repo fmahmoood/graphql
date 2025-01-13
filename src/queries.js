@@ -23,12 +23,12 @@ export const GET_USER_PROFILE = gql`
       totalUp
       totalDown
       skills: transactions(
-        order_by: [{type: desc}, {amount: desc}]
-        distinct_on: [type]
         where: {
           userId: {_eq: $userId}, 
-          type: {_in: ["skill_js", "skill_go", "skill_html", "skill_prog", "skill_front-end", "skill_back-end"]}
+          type: {_ilike: "skill_%"}
         }
+        order_by: [{amount: desc}]
+        distinct_on: [type]
       ) {
         type
         amount
@@ -37,7 +37,7 @@ export const GET_USER_PROFILE = gql`
         where: {
           auditorId: {_eq: $userId},
           grade: {_is_null: false}
-        },
+        }
         order_by: {createdAt: desc}
       ) {
         nodes {
@@ -52,7 +52,10 @@ export const GET_USER_PROFILE = gql`
           }
         }
       }
-      progresses(where: { userId: { _eq: $userId }, object: { type: { _eq: "project" } } }, order_by: {updatedAt: desc}) {
+      progresses(
+        where: { userId: { _eq: $userId }, object: { type: { _eq: "project" } } }
+        order_by: {updatedAt: desc}
+      ) {
         id
         object {
           id

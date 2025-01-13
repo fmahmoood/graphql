@@ -20,11 +20,12 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
               width="40"
               height={upHeight}
               fill="#FFD700"
+              className="up-bar"
             />
             <text x="60" y="-5" textAnchor="middle" fill="#888">
               Done
             </text>
-            <text x="60" y={-upHeight - 20} textAnchor="middle" fill="#FFD700">
+            <text x="60" y={-upHeight - 10} textAnchor="middle" fill="#FFD700">
               {totalUp.toFixed(2)} MB ↑
             </text>
           </g>
@@ -32,33 +33,34 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
           {/* Down Bar */}
           <g transform="translate(50, 250)">
             <rect
-              x="120"
+              x="100"
               y={-downHeight}
               width="40"
               height={downHeight}
               fill="#FFFFFF"
+              className="down-bar"
             />
-            <text x="140" y="-5" textAnchor="middle" fill="#888">
+            <text x="120" y="-5" textAnchor="middle" fill="#888">
               Received
             </text>
-            <text x="140" y={-downHeight - 20} textAnchor="middle" fill="#FFFFFF">
+            <text x="120" y={-downHeight - 10} textAnchor="middle" fill="#FFFFFF">
               {totalDown.toFixed(2)} MB ↓
             </text>
           </g>
 
           {/* Ratio Display */}
-          <g transform="translate(230, 150)">
+          <g transform="translate(200, 250)">
             <text
               className="ratio-text"
               x="0"
-              y="0"
-              fontSize="48"
+              y="-20"
+              fontSize="32"
               fontWeight="bold"
               fill="#FFD700"
             >
               {ratio.toFixed(1)}
             </text>
-            <text x="0" y="30" fontSize="14" fill="#888">
+            <text x="0" y="10" fontSize="14" fill="#888">
               You can do better!
             </text>
           </g>
