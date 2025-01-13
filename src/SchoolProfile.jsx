@@ -63,14 +63,42 @@ export default function SchoolProfile() {
     return grade >= 1 ? <span className="status-pass">Pass</span> : <span className="status-fail">Fail</span>
   }
 
-  const skillsData = [
-    { name: 'Prog', amount: 75 },
-    { name: 'Go', amount: 65 },
-    { name: 'Front-End', amount: 80 },
-    { name: 'Js', amount: 70 },
-    { name: 'Back-End', amount: 60 },
-    { name: 'Html', amount: 85 }
-  ];
+  const calculateSkillsData = (skills) => {
+    const skillMap = {
+      'skill_js': 'Js',
+      'skill_go': 'Go',
+      'skill_html': 'Html',
+      'skill_prog': 'Prog',
+      'skill_front-end': 'Front-End',
+      'skill_back-end': 'Back-End'
+    };
+
+    // Initialize all categories with 0
+    const categories = {
+      'Prog': 0,
+      'Go': 0,
+      'Front-End': 0,
+      'Js': 0,
+      'Back-End': 0,
+      'Html': 0
+    };
+
+    // Map the skills directly from transactions
+    skills.forEach(skill => {
+      const categoryName = skillMap[skill.type];
+      if (categoryName) {
+        categories[categoryName] = skill.amount;
+      }
+    });
+
+    // Convert to array format for the graph
+    return Object.entries(categories).map(([name, amount]) => ({
+      name,
+      amount: Math.round(amount) // Round to nearest integer
+    }));
+  };
+
+  const skillsData = calculateSkillsData(userData.skills || []);
 
   return (
     <div className="profile-container">
