@@ -192,34 +192,25 @@ export default function SchoolProfile() {
 
   return (
     <div className="profile-container">
-      <div className="profile-header">
-        <div className="user-info">
-          <h1>{userData.login}</h1>
-          <p>{userData.email}</p>
+      <section className="user-info">
+        <h2>User Profile</h2>
+        <div className="info-card">
+          <p><strong>Login:</strong> {userData.login}</p>
+          <p><strong>Name:</strong> {userData.firstName} {userData.lastName}</p>
+          <p><strong>Email:</strong> {userData.email}</p>
         </div>
-        <button className="logout-button" onClick={() => console.log('Logout button clicked')}>
-          Logout
-        </button>
-      </div>
+      </section>
 
-      <div className="stats-container">
-        <div className="graphs-container">
-          <SkillsGraph skills={skillsData} />
-          <AuditRatioGraph 
-            auditRatio={userData.auditRatio} 
-            totalUp={userData.totalUp}
-            totalDown={userData.totalDown}
-          />
-        </div>
+      <div className="graphs-container">
+        <AuditRatioGraph 
+          totalUp={userData.totalUp || 0} 
+          totalDown={userData.totalDown || 0} 
+        />
+        <SkillsGraph skills={skillsData} />
       </div>
 
       <section className="audit-activity">
         <h2>Your audits</h2>
-        <p className="audit-description">
-          Here you can find back all your audits : the ones you have to make and the ones you've
-          already made for other students projects. For the audits you have to do, hover the block to
-          get the verification code you'll need to complete the audit on your classmate computer.
-        </p>
         <div className="activity-list">
           {!userData.audits?.nodes?.length ? (
             <p>No recent audits found</p>
@@ -264,25 +255,20 @@ export default function SchoolProfile() {
           max-width: 1200px;
           margin: 0 auto;
         }
-        .profile-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 20px;
-        }
         .user-info {
-          margin-right: 20px;
-        }
-        .stats-container {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 20px;
           margin-bottom: 30px;
+        }
+        .info-card {
+          background: #fff;
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .graphs-container {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 20px;
+          margin-bottom: 30px;
         }
         .audit-activity {
           background: #fff;
@@ -319,28 +305,6 @@ export default function SchoolProfile() {
         }
         .student-name {
           color: #666;
-        }
-        .recent-progress {
-          background: rgba(30, 30, 30, 0.5);
-          border-radius: 8px;
-          padding: 20px;
-          margin: 20px 0;
-        }
-        .progress-item {
-          background: rgba(40, 40, 40, 0.5);
-          padding: 15px;
-          margin: 10px 0;
-          border-radius: 5px;
-        }
-        .progress-item div {
-          margin: 5px 0;
-        }
-        .progress-item strong {
-          color: #9580ff;
-        }
-        h2 {
-          color: #fff;
-          margin: 0 0 15px 0;
         }
       `}</style>
     </div>

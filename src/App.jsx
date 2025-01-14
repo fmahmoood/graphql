@@ -174,20 +174,6 @@ function App() {
           {/* School Profile Component with Audit Activity */}
           <SchoolProfile userId={parseInt(userData.user[0].id)} />
         </div>
-
-        {/* Recent Progress Section */}
-        <section className="progress-section">
-          <h2>Recent Progress</h2>
-          <div className="progress-list">
-            {progressData?.progress?.map(progress => (
-              <div key={progress.id} className="progress-item">
-                <p><strong>Project:</strong> {progress.path}</p>
-                <p><strong>Grade:</strong> {progress.grade}</p>
-                <p><strong>Date:</strong> {new Date(progress.createdAt).toLocaleDateString()}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </div>
     );
   }
