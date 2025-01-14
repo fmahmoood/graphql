@@ -174,27 +174,43 @@ export default function SchoolProfile() {
     }
   };
 
+  const formatProjectName = (path) => {
+    if (!path) return '';
+    // Get the last part of the path
+    const parts = path.split('/');
+    return parts[parts.length - 1];
+  };
+
+  const formatGrade = (grade) => {
+    if (grade === null || grade === undefined) return 'Pending';
+    return 'Succeeded';
+  };
+
   // Get skills data safely
   const skillsData = calculateSkillsData(userData?.skills);
   console.log('Processed skills data:', skillsData);
 
   return (
     <div className="profile-container">
-      <section className="user-info">
-        <h2>User Profile</h2>
-        <div className="info-card">
-          <p><strong>Login:</strong> {userData.login}</p>
-          <p><strong>Name:</strong> {userData.firstName} {userData.lastName}</p>
-          <p><strong>Email:</strong> {userData.email}</p>
+      <div className="profile-header">
+        <div className="user-info">
+          <h1>{userData.login}</h1>
+          <p>{userData.email}</p>
         </div>
-      </section>
+        <button className="logout-button" onClick={() => console.log('Logout button clicked')}>
+          Logout
+        </button>
+      </div>
 
-      <div className="graphs-container">
-        <AuditRatioGraph 
-          totalUp={userData.totalUp || 0} 
-          totalDown={userData.totalDown || 0} 
-        />
-        <SkillsGraph skills={skillsData} />
+      <div className="stats-container">
+        <div className="graphs-container">
+          <SkillsGraph skills={skillsData} />
+          <AuditRatioGraph 
+            auditRatio={userData.auditRatio} 
+            totalUp={userData.totalUp}
+            totalDown={userData.totalDown}
+          />
+        </div>
       </div>
 
       <section className="audit-activity">
@@ -222,26 +238,51 @@ export default function SchoolProfile() {
         </div>
       </section>
 
+      <section className="recent-progress">
+        <h2>Recent Progress</h2>
+        {userData.progresses.map((progress) => (
+          <div key={progress.id} className="progress-item">
+            <div className="project">
+              <strong>Project: </strong>
+              {formatProjectName(progress.object.name)}
+            </div>
+            <div className="grade">
+              <strong>Grade: </strong>
+              {formatGrade(progress.grade)}
+            </div>
+            <div className="date">
+              <strong>Date: </strong>
+              {new Date(progress.createdAt).toLocaleDateString()}
+            </div>
+          </div>
+        ))}
+      </section>
+
       <style jsx>{`
         .profile-container {
           padding: 20px;
           max-width: 1200px;
           margin: 0 auto;
         }
-        .user-info {
-          margin-bottom: 30px;
+        .profile-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 20px;
         }
-        .info-card {
-          background: #fff;
-          padding: 20px;
-          border-radius: 8px;
-          box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .user-info {
+          margin-right: 20px;
+        }
+        .stats-container {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 20px;
+          margin-bottom: 30px;
         }
         .graphs-container {
           display: grid;
           grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
           gap: 20px;
-          margin-bottom: 30px;
         }
         .audit-activity {
           background: #fff;
@@ -278,6 +319,28 @@ export default function SchoolProfile() {
         }
         .student-name {
           color: #666;
+        }
+        .recent-progress {
+          background: rgba(30, 30, 30, 0.5);
+          border-radius: 8px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .progress-item {
+          background: rgba(40, 40, 40, 0.5);
+          padding: 15px;
+          margin: 10px 0;
+          border-radius: 5px;
+        }
+        .progress-item div {
+          margin: 5px 0;
+        }
+        .progress-item strong {
+          color: #9580ff;
+        }
+        h2 {
+          color: #fff;
+          margin: 0 0 15px 0;
         }
       `}</style>
     </div>
