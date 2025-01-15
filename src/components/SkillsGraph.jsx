@@ -108,7 +108,6 @@ const SkillsGraph = ({ skills }) => {
       <style jsx>{`
         .skills-container {
           background: rgba(30, 30, 30, 0.5);
-          border-radius: 8px;
           padding: 20px;
           margin: 20px 0;
         }
