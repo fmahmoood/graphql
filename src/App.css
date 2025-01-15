@@ -274,3 +274,7 @@ body {
     padding: 1rem;
   }
 }
+
+svg text {
+  word-break: break-word;
+}

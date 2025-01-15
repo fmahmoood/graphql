@@ -5,89 +5,103 @@ const SkillsGraph = ({ skills }) => {
   const categories = skills.map(skill => skill.name);
   const maxValue = Math.max(...skills.map(s => s.amount));
   const scale = 100 / maxValue;
-  const centerX = 150;
-  const centerY = 150;
   const radius = 100;
+  const centerX = 250;
+  const centerY = 150;
+  const labelOffset = 30; // Additional offset for labels
 
-  // Calculate points for the radar chart
-  const getPoint = (index, value) => {
-    const angle = (Math.PI * 2 * index) / categories.length - Math.PI / 2;
-    const scaledValue = value * scale;
-    return {
-      x: centerX + radius * (scaledValue / 100) * Math.cos(angle),
-      y: centerY + radius * (scaledValue / 100) * Math.sin(angle)
-    };
-  };
-
-  // Create the polygon points for the radar chart
-  const points = categories.map((_, i) => {
-    const point = getPoint(i, skills[i].amount);
-    return `${point.x},${point.y}`;
-  }).join(' ');
-
-  // Create axis lines and labels
-  const axes = categories.map((category, i) => {
-    const angle = (Math.PI * 2 * i) / categories.length - Math.PI / 2;
-    const endX = centerX + radius * Math.cos(angle);
-    const endY = centerY + radius * Math.sin(angle);
-    const labelX = centerX + (radius + 30) * Math.cos(angle);
-    const labelY = centerY + (radius + 30) * Math.sin(angle);
-
-    return (
-      <g key={category}>
-        <line
-          x1={centerX}
-          y1={centerY}
-          x2={endX}
-          y2={endY}
-          stroke="#444"
-          strokeWidth="1"
-        />
-        <text
-          x={labelX}
-          y={labelY}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill="#fff"
-          fontSize="14"
-        >
-          {category}
-        </text>
-      </g>
-    );
-  });
-
-  // Create circular grid lines
-  const circles = [0.2, 0.4, 0.6, 0.8, 1].map((percentage, i) => (
+  // Create grid circles
+  const circles = [0.2, 0.4, 0.6, 0.8, 1].map((scale, index) => (
     <circle
-      key={i}
+      key={index}
       cx={centerX}
       cy={centerY}
-      r={radius * percentage}
+      r={radius * scale}
       fill="none"
       stroke="#444"
       strokeWidth="1"
     />
   ));
 
+  // Calculate points for skills
+  const points = skills.map((skill, index) => {
+    const angle = (index * 2 * Math.PI) / skills.length - Math.PI / 2;
+    const value = skill.amount / 100;
+    const x = centerX + radius * value * Math.cos(angle);
+    const y = centerY + radius * value * Math.sin(angle);
+    return `${x},${y}`;
+  }).join(' ');
+
+  // Calculate label positions with increased offset
+  const labels = skills.map((skill, index) => {
+    const angle = (index * 2 * Math.PI) / skills.length - Math.PI / 2;
+    const x = centerX + (radius + labelOffset) * Math.cos(angle);
+    const y = centerY + (radius + labelOffset) * Math.sin(angle);
+    
+    // Adjust text anchor based on position
+    let textAnchor = "middle";
+    if (x < centerX - 10) textAnchor = "end";
+    if (x > centerX + 10) textAnchor = "start";
+
+    // Adjust vertical alignment based on position
+    let dy = "0.3em";
+    if (y < centerY - 10) dy = "0em";
+    if (y > centerY + 10) dy = "0.6em";
+
+    return (
+      <text
+        key={index}
+        x={x}
+        y={y}
+        textAnchor={textAnchor}
+        dy={dy}
+        fill="#fff"
+        fontSize="14"
+      >
+        {skill.name}
+      </text>
+    );
+  });
+
+  // Create grid lines
+  const gridLines = skills.map((_, index) => {
+    const angle = (index * 2 * Math.PI) / skills.length - Math.PI / 2;
+    const x = centerX + radius * Math.cos(angle);
+    const y = centerY + radius * Math.sin(angle);
+    return (
+      <line
+        key={index}
+        x1={centerX}
+        y1={centerY}
+        x2={x}
+        y2={y}
+        stroke="#444"
+        strokeWidth="1"
+      />
+    );
+  });
+
   return (
     <div className="skills-container">
       <h3>Best skills</h3>
       <div className="graph-container">
-        <svg width="500" height="300" viewBox="0 0 300 300">
+        <svg width="600" height="300" viewBox="0 0 500 300">
           {/* Grid circles */}
           {circles}
           
-          {/* Axis lines and labels */}
-          {axes}
-          
+          {/* Grid lines */}
+          {gridLines}
+
           {/* Skills polygon */}
           <polygon
             points={points}
-            fill="rgba(149, 128, 255, 0.5)"
-            stroke="#9580ff"
+            fill="rgba(147, 112, 219, 0.5)"
+            stroke="#9370DB"
             strokeWidth="2"
           />
+
+          {/* Skill labels */}
+          {labels}
         </svg>
       </div>
 

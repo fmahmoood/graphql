@@ -15,7 +15,7 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
     <div className="audit-ratio-container">
       <h3>Audits ratio</h3>
       <div className="graph-container">
-        <svg width="500" height="300" viewBox="0 0 400 300">
+        <svg width="600" height="300" viewBox="0 0 400 300">
           {/* Up Bar */}
           <g transform="translate(100, 250)">
             <rect

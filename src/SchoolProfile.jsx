@@ -215,9 +215,7 @@ function SchoolProfile({ userId }) {
           background: #363636;
           padding: 20px;
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-          border: 1px solid #444;
           width: 100%;
-          margin: 0;
           box-sizing: border-box;
         }
 
