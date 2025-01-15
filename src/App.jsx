@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useApolloClient } from '@apollo/client';
-import { GET_USER, GET_PROJECT_RESULTS } from './queries';
+import { GET_USER } from './queries';
 import SchoolProfile from './SchoolProfile';
 import './App.css';
+import { getUserIdFromToken } from './utils';
 
 function App() {
   const client = useApolloClient();
-  // State for auth and UI
   const [token, setToken] = useState(localStorage.getItem('jwt_token'));
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -15,33 +15,25 @@ function App() {
     password: ''
   });
 
-  // Clear Apollo cache and token when logging out
   const clearAuthState = () => {
     localStorage.removeItem('jwt_token');
     setToken(null);
-    // Clear Apollo cache to prevent stale data
     client.clearStore();
   };
 
-  // Check token validity
   useEffect(() => {
     if (token) {
-      // Check if token is expired
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
-        const expTime = payload.exp * 1000;
-        if (Date.now() >= expTime) {
-          console.log('Token expired on load, clearing auth state...');
+        if (payload.exp * 1000 < Date.now()) {
           clearAuthState();
         }
-      } catch (err) {
-        console.error('Error checking token:', err);
+      } catch (e) {
         clearAuthState();
       }
     }
   }, [token]);
 
-  // Execute GraphQL queries when logged in
   const { data: userData, loading: userLoading, error: userError } = useQuery(GET_USER, {
     skip: !token,
     onError: (error) => {
@@ -52,36 +44,22 @@ function App() {
     }
   });
 
-  console.log('App - User Data:', userData); // Debug log
-  console.log('App - Token present:', !!token); // Debug log
-
-  const { data: progressData, loading: progressLoading } = useQuery(GET_PROJECT_RESULTS, {
-    skip: !token || !userData?.user?.[0]?.id,
-    variables: {
-      userId: userData?.user?.[0]?.id ? parseInt(userData.user[0].id) : null
-    },
-    onError: (error) => {
-      console.error('Progress Query Error:', error);
-      if (error.message.includes('JWT') && error.message.includes('expired')) {
-        clearAuthState();
-      }
-    }
-  });
-
-  console.log('App - Progress Data:', progressData); // Debug log
-
-  // Show loading state while fetching initial user data
   if (token && userLoading) {
-    return <div>Loading user information...</div>;
+    return <div>Loading...</div>;
   }
 
-  // Show error if user query fails
   if (userError) {
-    console.error('User Query Error:', userError);
-    return <div>Error loading user data: {userError.message}</div>;
+    return <div className="error">Error: {userError.message}</div>;
   }
 
-  // Handle login form submission
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setCredentials(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -107,9 +85,7 @@ function App() {
       localStorage.setItem('jwt_token', cleanToken);
       setToken(cleanToken);
       
-      // Reset Apollo cache on login
       await client.resetStore();
-
     } catch (err) {
       setError('Login failed: ' + err.message);
     } finally {
@@ -117,68 +93,59 @@ function App() {
     }
   };
 
-  // Handle logout
   const handleLogout = () => {
     clearAuthState();
   };
 
-  // If not logged in, show login form
   if (!token) {
     return (
-      <div className="loginContainer">
-        <form onSubmit={handleLogin}>
-          <h2>School Login</h2>
-          
-          <div className="inputGroup">
-            <input
-              type="text"
-              placeholder="Username"
-              value={credentials.username}
-              onChange={(e) => setCredentials({
-                ...credentials,
-                username: e.target.value
-              })}
-            />
-          </div>
-
-          <div className="inputGroup">
-            <input
-              type="password"
-              placeholder="Password"
-              value={credentials.password}
-              onChange={(e) => setCredentials({
-                ...credentials,
-                password: e.target.value
-              })}
-            />
-          </div>
-
-          {error && <div className="error">{error}</div>}
-          
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? 'Logging in...' : 'Login'}
-          </button>
-        </form>
-      </div>
-    );
-  }
-
-  // If logged in and have user data, show profile
-  if (token && userData?.user?.[0]) {
-    return (
-      <div>
-        <button className="logout-button" onClick={handleLogout}>Logout</button>
-        <h1>Profile Data</h1>
-
-        <div className="profile-sections">
-          {/* School Profile Component with Audit Activity */}
-          <SchoolProfile userId={parseInt(userData.user[0].id)} />
+      <div className="app-container">
+        <div className="login-container">
+          <h1>Login</h1>
+          <form onSubmit={handleLogin}>
+            <div>
+              <input
+                type="text"
+                name="username"
+                value={credentials.username}
+                onChange={handleInputChange}
+                placeholder="Username"
+                required
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                name="password"
+                value={credentials.password}
+                onChange={handleInputChange}
+                placeholder="Password"
+                required
+              />
+            </div>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Logging in...' : 'Login'}
+            </button>
+            {error && <div className="error">{error}</div>}
+          </form>
         </div>
       </div>
     );
   }
 
-  return <div>Loading profile data...</div>;
+  return (
+    <div className="app-container">
+      <div className="profile-header">
+        <h1>GraphQL</h1>
+        <button className="logout-button" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
+      <div className="profile-sections">
+        <SchoolProfile userId={parseInt(userData.user[0].id)} />
+      </div>
+    </div>
+  );
 }
 
 export default App;
