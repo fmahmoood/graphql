@@ -55,8 +55,7 @@ const SkillsGraph = ({ skills }) => {
         y={y}
         textAnchor={textAnchor}
         dy={dy}
-        fill="#fff"
-        fontSize="14"
+        className="skill-label"
       >
         {skill.name}
       </text>
@@ -95,33 +94,13 @@ const SkillsGraph = ({ skills }) => {
           {/* Skills polygon */}
           <polygon
             points={points}
-            fill="rgba(147, 112, 219, 0.5)"
-            stroke="#9370DB"
-            strokeWidth="2"
+            className="skills-polygon"
           />
 
           {/* Skill labels */}
           {labels}
         </svg>
       </div>
-
-      <style jsx>{`
-        .skills-container {
-          background: rgba(30, 30, 30, 0.5);
-          padding: 20px;
-          margin: 20px 0;
-        }
-        .graph-container {
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          margin-top: 20px;
-        }
-        h3 {
-          color: #fff;
-          margin: 0 0 10px 0;
-        }
-      `}</style>
     </div>
   );
 };

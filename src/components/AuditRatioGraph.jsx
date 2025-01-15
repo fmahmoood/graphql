@@ -13,9 +13,9 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
 
   return (
     <div className="audit-ratio-container">
-      <h3>Audits ratio</h3>
+      <h3 className="title">Audits ratio</h3>
       <div className="graph-container">
-        <svg width="600" height="300" viewBox="0 0 400 300">
+        <svg className="graph" width="600" height="300" viewBox="0 0 400 300">
           {/* Up Bar */}
           <g transform="translate(100, 250)">
             <rect
@@ -23,13 +23,12 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
               y={-upHeight}
               width="40"
               height={upHeight}
-              fill="#FFD700"
               className="up-bar"
             />
-            <text x="20" y="20" textAnchor="middle" fill="#888">
+            <text x="20" y="20" textAnchor="middle" className="label">
               Done
             </text>
-            <text x="20" y={-upHeight - 10} textAnchor="middle" fill="#FFD700">
+            <text x="20" y={-upHeight - 10} textAnchor="middle" className="value">
               {totalUpMB.toFixed(2)} MB ↑
             </text>
           </g>
@@ -41,13 +40,12 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
               y={-downHeight}
               width="40"
               height={downHeight}
-              fill="#FFFFFF"
               className="down-bar"
             />
-            <text x="20" y="20" textAnchor="middle" fill="#888">
+            <text x="20" y="20" textAnchor="middle" className="label">
               Received
             </text>
-            <text x="20" y={-downHeight - 10} textAnchor="middle" fill="#FFFFFF">
+            <text x="20" y={-downHeight - 10} textAnchor="middle" className="value">
               {totalDownMB.toFixed(2)} MB ↓
             </text>
           </g>
@@ -58,34 +56,15 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
               className="ratio-text"
               x="0"
               y="-20"
-              fontSize="32"
-              fontWeight="bold"
-              fill="#FFD700"
             >
               {ratio.toFixed(1)}
             </text>
-            <text x="0" y="20" fontSize="14" fill="#888">
+            <text x="0" y="20" className="hint">
               You can do better!
             </text>
           </g>
         </svg>
       </div>
-
-      <style jsx>{`
-        .audit-ratio-container {
-          background: rgba(30, 30, 30, 0.5);
-          padding: 20px;
-          margin: 20px 0;
-        }
-        .graph-container {
-          margin-top: 20px;
-        }
-        h3 {
-          margin: 0;
-          color: #fff;
-          font-size: 1.5rem;
-        }
-      `}</style>
     </div>
   );
 };
