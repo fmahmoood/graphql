@@ -148,7 +148,9 @@ function SchoolProfile({ userId }) {
               </div>
               <div className="grade">
                 <strong>Grade: </strong>
-                {formatGrade(progress.grade)}
+                <span style={{ color: progress.grade === null ? 'rgb(255, 225, 64)' : '#00ff9d' }}>
+                  {formatGrade(progress.grade)}
+                </span>
               </div>
               <div className="date">
                 <strong>Date: </strong>

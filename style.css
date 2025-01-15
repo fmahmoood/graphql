@@ -98,20 +98,6 @@
     margin: 0 auto;
   }
   
-  /* Logout button specific styling */
-  .logout-button {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: auto;
-    padding: 8px 16px;
-    background-color: #dc3545;
-  }
-  
-  .logout-button:hover {
-    background-color: #bd2130;
-  }
-  
   /* Responsive design for smaller screens */
   @media (max-width: 480px) {
     form {
