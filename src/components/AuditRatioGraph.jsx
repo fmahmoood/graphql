@@ -1,55 +1,59 @@
 import React from 'react';
 
 const AuditRatioGraph = ({ totalUp, totalDown }) => {
-  const maxValue = Math.max(totalUp, totalDown);
+  // Convert bytes to megabytes
+  const totalUpMB = totalUp / (1024 * 1024);
+  const totalDownMB = totalDown / (1024 * 1024);
+
+  const maxValue = Math.max(totalUpMB, totalDownMB);
   const scale = 200 / maxValue; // Scale to fit in 200px height
-  const upHeight = totalUp * scale;
-  const downHeight = totalDown * scale;
-  const ratio = totalUp / totalDown;
+  const upHeight = totalUpMB * scale;
+  const downHeight = totalDownMB * scale;
+  const ratio = totalUpMB / totalDownMB;
 
   return (
     <div className="audit-ratio-container">
       <h3>Audits ratio</h3>
       <div className="graph-container">
-        <svg width="300" height="300" viewBox="0 0 300 300">
+        <svg width="500" height="300" viewBox="0 0 400 300">
           {/* Up Bar */}
-          <g transform="translate(50, 250)">
+          <g transform="translate(100, 250)">
             <rect
-              x="40"
+              x="0"
               y={-upHeight}
               width="40"
               height={upHeight}
               fill="#FFD700"
               className="up-bar"
             />
-            <text x="60" y="-5" textAnchor="middle" fill="#888">
+            <text x="20" y="20" textAnchor="middle" fill="#888">
               Done
             </text>
-            <text x="60" y={-upHeight - 10} textAnchor="middle" fill="#FFD700">
-              {totalUp.toFixed(2)} MB ↑
+            <text x="20" y={-upHeight - 10} textAnchor="middle" fill="#FFD700">
+              {totalUpMB.toFixed(2)} MB ↑
             </text>
           </g>
 
           {/* Down Bar */}
-          <g transform="translate(50, 250)">
+          <g transform="translate(200, 250)">
             <rect
-              x="100"
+              x="0"
               y={-downHeight}
               width="40"
               height={downHeight}
               fill="#FFFFFF"
               className="down-bar"
             />
-            <text x="120" y="-5" textAnchor="middle" fill="#888">
+            <text x="20" y="20" textAnchor="middle" fill="#888">
               Received
             </text>
-            <text x="120" y={-downHeight - 10} textAnchor="middle" fill="#FFFFFF">
-              {totalDown.toFixed(2)} MB ↓
+            <text x="20" y={-downHeight - 10} textAnchor="middle" fill="#FFFFFF">
+              {totalDownMB.toFixed(2)} MB ↓
             </text>
           </g>
 
           {/* Ratio Display */}
-          <g transform="translate(200, 250)">
+          <g transform="translate(300, 250)">
             <text
               className="ratio-text"
               x="0"
@@ -60,7 +64,7 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
             >
               {ratio.toFixed(1)}
             </text>
-            <text x="0" y="10" fontSize="14" fill="#888">
+            <text x="0" y="20" fontSize="14" fill="#888">
               You can do better!
             </text>
           </g>

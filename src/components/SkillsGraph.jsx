@@ -74,7 +74,7 @@ const SkillsGraph = ({ skills }) => {
     <div className="skills-container">
       <h3>Best skills</h3>
       <div className="graph-container">
-        <svg width="300" height="300" viewBox="0 0 300 300">
+        <svg width="500" height="300" viewBox="0 0 300 300">
           {/* Grid circles */}
           {circles}
           
