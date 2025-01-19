@@ -110,14 +110,12 @@ h2, h3 {
 .info-card {
   background: #363636;
   padding: 20px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   width: 100%;
   box-sizing: border-box;
 }
 
 .info-card p {
   margin: 10px 0;
-  color: #e4e4e4;
 }
 
 /* Strong tag styles - consolidated */
