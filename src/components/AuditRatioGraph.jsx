@@ -1,9 +1,9 @@
 import React from 'react';
 
 const AuditRatioGraph = ({ totalUp, totalDown }) => {
-  // Convert bytes to megabytes
-  const totalUpMB = totalUp / (1024 * 1024);
-  const totalDownMB = totalDown / (1024 * 1024);
+  // Convert to MB by moving decimal point 6 places left
+  const totalUpMB = totalUp / 1000000;
+  const totalDownMB = totalDown / 1000000;
 
   const maxValue = Math.max(totalUpMB, totalDownMB);
   const scale = 200 / maxValue; // Scale to fit in 200px height
