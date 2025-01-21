@@ -6,6 +6,7 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   // Add React plugin for JSX support
   plugins: [react()],
+  base: '/graphql/',
   
   // Development server configuration
   server: {
