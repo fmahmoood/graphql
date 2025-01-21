@@ -7,7 +7,9 @@ export default defineConfig({
   // Add React plugin for JSX support
   plugins: [react()],
   base: '/graphql/',
-  
+  build: {
+    outDir: 'dist'
+  },
   // Development server configuration
   server: {
     // Proxy configuration for API requests
