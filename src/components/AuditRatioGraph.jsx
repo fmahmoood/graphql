@@ -59,9 +59,6 @@ const AuditRatioGraph = ({ totalUp, totalDown }) => {
             >
               {ratio.toFixed(1)}
             </text>
-            <text x="0" y="20" className="hint">
-              You can do better!
-            </text>
           </g>
         </svg>
       </div>
